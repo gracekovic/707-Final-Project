@@ -1,0 +1,59 @@
+---
+title: "707 Project"
+author: "Grace Kovic"
+date: "10/14/2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Packages
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+# Import data 
+diabetes_data = read.csv("diabetes_012_health_indicators_BRFSS2015.csv")
+```
+
+```{r}
+# Select variables of interest
+diabetes_data_clean = diabetes_data %>% dplyr::select(Sex, Age, Income, AnyHealthcare, PhysHlth, MentHlth)
+```
+
+```{r}
+diabetes_data_clean$Age = as.factor(diabetes_data_clean$Age)
+diabetes_data_clean$Sex = as.factor(diabetes_data_clean$Sex)
+diabetes_data_clean$Income = as.factor(diabetes_data_clean$Income)
+diabetes_data_clean$AnyHealthcare = as.factor(diabetes_data_clean$AnyHealthcare)
+diabetes_data_clean$PhysHlth = as.numeric(diabetes_data_clean$PhysHlth)
+diabetes_data_clean$MentHlth = as.numeric(diabetes_data_clean$MentHlth)
+
+str(diabetes_data_clean)
+```
+
+```{r}
+# Trying to change group names of Age to actual age ranges 
+diabetes_data_clean$Age = factor(diabetes_data_clean$Age, 
+                                 levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"), 
+                                 labels = c("[18, 24]", "[25, 29]", "[30, 34]", "[35, 39]", "[40, 44]", "[45, 49]", "[50, 54]", "[55, 59]", "[60, 64]", "[65, 69]", "[70, 74]", "[75, 79]", "80 or older", "Don't know/Refused/Missing"))
+
+# Barplot of Mental Health Status across Age group 
+
+ggplot(diabetes_data_clean, aes(x = Age, y = MentHlth)) + 
+  geom_bar(stat = "identity") + 
+  xlab("Age") + 
+  ylab("# of Days in Last Month of Feeling Mentally Unwell") + 
+  ggtitle("Distribution of Mental Health Status Across Age Group")
+  
+```
+```{r}
+hist(diabetes_data_clean$MentHlth)
+table(diabetes_data_clean$MentHlth)
+which(diabetes_data_clean$MentHlth == 0)
+```
+
