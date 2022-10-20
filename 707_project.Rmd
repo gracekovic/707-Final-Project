@@ -23,10 +23,11 @@ diabetes_data = read.csv("diabetes_012_health_indicators_BRFSS2015.csv")
 
 ```{r}
 # Select variables of interest
-diabetes_data_clean = diabetes_data %>% dplyr::select(Sex, Age, Income, AnyHealthcare, PhysHlth, MentHlth)
+diabetes_data_clean = diabetes_data %>% select(Sex, Age, Income, AnyHealthcare, PhysHlth, MentHlth)
 ```
 
 ```{r}
+# Converting all variables of interest to appropriate variable types 
 diabetes_data_clean$Age = as.factor(diabetes_data_clean$Age)
 diabetes_data_clean$Sex = as.factor(diabetes_data_clean$Sex)
 diabetes_data_clean$Income = as.factor(diabetes_data_clean$Income)
@@ -34,7 +35,9 @@ diabetes_data_clean$AnyHealthcare = as.factor(diabetes_data_clean$AnyHealthcare)
 diabetes_data_clean$PhysHlth = as.numeric(diabetes_data_clean$PhysHlth)
 diabetes_data_clean$MentHlth = as.numeric(diabetes_data_clean$MentHlth)
 
+# Structure of cleaned data 
 str(diabetes_data_clean)
+
 ```
 
 ```{r}
@@ -52,9 +55,12 @@ ggplot(diabetes_data_clean, aes(x = Age, y = MentHlth)) +
   ggtitle("Distribution of Mental Health Status Across Age Group")
   
 ```
+
 ```{r}
+# Histogram of mental health 
 hist(diabetes_data_clean$MentHlth)
 table(diabetes_data_clean$MentHlth)
 which(diabetes_data_clean$MentHlth == 0)
 ```
+
 
