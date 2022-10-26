@@ -1,0 +1,86 @@
+---
+title: "707 Model"
+author: "Luke"
+date: "10/12/2022"
+output: github_document
+---
+```{r}
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+df <- read_csv("diabetes_012_health_indicators_BRFSS2015.csv")
+data
+na.omit(data)
+```
+
+```{r}
+
+```
+
+```{r}
+hist(df$PhysHlth)
+ggplot(df, aes(PhysHlth)) +
+  geom_histogram(bins = 30) +
+  geom_histogram(colour = "goldenrod2", fill = "gold1") +
+  geom_vline(aes(xintercept = mean(PhysHlth)), color = "#000000", size = 1.25) +
+  geom_vline(aes(xintercept = mean(PhysHlth) + sd(PhysHlth)), color = "#000000", size = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = mean(PhysHlth) - sd(PhysHlth)), color = "#000000", size = 1, linetype = "dashed") +
+  geom_density(color = "#000000", alpha = 0.6) + 
+  labs(
+    title = "Histogram of Physical Health",
+    subtitle = "Mental Health Explainer",
+    caption = "Source: BRFSS2015",
+    x = "Physical Health",
+    y = "Count"
+  )+ 
+  theme_classic()
+ 
+hist(df$Income)
+ggplot(df, aes(Income)) +
+  geom_histogram(bins = 30)+
+  geom_histogram(color = "#000000", fill = "#0099F8") +
+  geom_vline(aes(xintercept = mean(Income)), color = "#000000", size = 1.25) +
+  geom_vline(aes(xintercept = mean(Income) + sd(Income)), color = "#000000", size = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = mean(Income) - sd(Income)), color = "#000000", size = 1, linetype = "dashed") +
+  geom_density(color = "#000000", fill = "#F85700", alpha = 0.6) +
+  labs(
+    title = "Histogram of Income",
+    subtitle = "Mental Health Explainer",
+    caption = "Source: BRFSS2015",
+    x = "Income Level",
+    y = "Count"
+  ) + 
+  theme_classic()
+
+```
+
+```{r}
+'''
+hist(data$MentHlth)
+
+
+ggplot(data=df, aes(x=Age, y=MentHlth)) +
+  geom_bar(stat="identity")
+
+
+ggplot(data=df, aes(x=Sex, y=MentHlth)) +
+  geom_bar(stat="identity")
+
+ggplot(data=df, aes(x=PhysHlth, y=MentHlth)) +
+  geom_bar(stat="identity")
+
+pca <- prcomp(data[,c(5,20:22)], center = TRUE,scale. = TRUE)
+summary(pca)
+
+str(pca)
+library(ggbiplot)
+library(ggfortify)
+biplot(pca)
+autoplot(pca)
+'''
+```
+
