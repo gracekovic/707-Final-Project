@@ -14,7 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
+library(RColorBrewer)
 ```
+
+```{r}
+```
+
+#### Data Pre-Processing
 
 ```{r}
 # Import data 
@@ -27,40 +33,98 @@ diabetes_data_clean = diabetes_data %>% select(Sex, Age, Income, AnyHealthcare, 
 ```
 
 ```{r}
-# Converting all variables of interest to appropriate variable types 
-diabetes_data_clean$Age = as.factor(diabetes_data_clean$Age)
-diabetes_data_clean$Sex = as.factor(diabetes_data_clean$Sex)
-diabetes_data_clean$Income = as.factor(diabetes_data_clean$Income)
-diabetes_data_clean$AnyHealthcare = as.factor(diabetes_data_clean$AnyHealthcare)
-diabetes_data_clean$PhysHlth = as.numeric(diabetes_data_clean$PhysHlth)
-diabetes_data_clean$MentHlth = as.numeric(diabetes_data_clean$MentHlth)
-
 # Structure of cleaned data 
 str(diabetes_data_clean)
 
+# Converting variables of interest to appropriate variable types 
+diabetes_data_clean$PhysHlth = as.numeric(diabetes_data_clean$PhysHlth)
+diabetes_data_clean$MentHlth = as.numeric(diabetes_data_clean$MentHlth)
+
 ```
 
+### Exploratory Data Analysis
+
+#### Checking for Outliers
+
 ```{r}
-# Trying to change group names of Age to actual age ranges 
-diabetes_data_clean$Age = factor(diabetes_data_clean$Age, 
+# Checking for missing values in the subsetted dataset 
+sum(is.na(diabetes_data_clean))
+```
+
+#### Age
+
+```{r}
+# Creating a categorical variable for age with 14 levels - 14th level is not shown because the current dataset was previously cleaned 
+diabetes_data_clean$Age_cat14 = factor(diabetes_data_clean$Age, 
                                  levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"), 
                                  labels = c("[18, 24]", "[25, 29]", "[30, 34]", "[35, 39]", "[40, 44]", "[45, 49]", "[50, 54]", "[55, 59]", "[60, 64]", "[65, 69]", "[70, 74]", "[75, 79]", "80 or older", "Don't know/Refused/Missing"))
 
 # Barplot of Mental Health Status across Age group 
 
-ggplot(diabetes_data_clean, aes(x = Age, y = MentHlth)) + 
-  geom_bar(stat = "identity") + 
+mycolors = c(brewer.pal(n = 8, name = "PiYG"), rev(brewer.pal(n = 5, name = "PiYG")))
+
+ggplot(diabetes_data_clean, aes(x = Age_cat14, fill = Age_cat14)) + 
+  geom_bar() + 
   xlab("Age") + 
-  ylab("# of Days in Last Month of Feeling Mentally Unwell") + 
-  ggtitle("Distribution of Mental Health Status Across Age Group")
+  ylab("Count") + 
+  ggtitle("Distribution of Age Groups") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
+  scale_fill_manual(values = mycolors)
   
 ```
+
+#### Sex
+
+```{r}
+# Make a categorical Sex variable
+diabetes_data_clean$Sex_2cat = factor(diabetes_data_clean$Sex, 
+                                 levels = c(0, 1), 
+                                 labels = c("Male", "Female"))
+
+# Barplot of Sex 
+ggplot(diabetes_data_clean, aes(x = Sex_2cat, fill = Sex_2cat)) + 
+  geom_bar() + 
+  xlab("Sex") + 
+  ylab("Count") + 
+  ggtitle("Distribution of Sex") + 
+  theme(axis.text.x = element_text(angle = 45)) + 
+  scale_fill_manual(values = c("dodgerblue", "brown1"))
+```
+
+#### Income
+
+```{r}
+diabetes_data_clean$Income
+```
+
+#### Having Healthcare
+
+```{r}
+diabetes_data_clean$AnyHealthcare_2cat = factor(diabetes_data_clean$AnyHealthcare, 
+                                          levels = c(0, 1), 
+                                          labels = c("Yes", "No"))
+ggplot(diabetes_data_clean, aes(x = AnyHealthcare_2cat, fill = AnyHealthcare_2cat)) + 
+  geom_bar() + 
+  xlab("Do you have any kind of health care coverage?") + 
+  ylab("Count") + 
+  ggtitle("Distribution of Health Care Coverage") + 
+  labs(subtitle = "Do you have any kind of health care coverage, including health insurance, \n prepaid plans such as HMOs, or government plans such as Medicare, \n or Indian Health Service?") + 
+  theme(legend.position = "none")
+```
+
+#### Mental Health Status
 
 ```{r}
 # Histogram of mental health 
 hist(diabetes_data_clean$MentHlth)
 table(diabetes_data_clean$MentHlth)
 which(diabetes_data_clean$MentHlth == 0)
+
+ggplot()
 ```
 
+#### Physical Health Status
 
+```{r}
+
+```
