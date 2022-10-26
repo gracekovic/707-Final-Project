@@ -11,19 +11,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Packages
+library(dplyr)
 library(tidyverse)
 library(ggplot2)
-library(dplyr)
 library(RColorBrewer)
+library(here)
+library(haven)
 ```
 
 ```{r}
+# Raw data file from the 2015 BRFSS - contains 441,456 obs and 330 variables
+raw_BRFSS2015_data = read_xpt(here("LLCP2015.xpt"))
+
 ```
 
 #### Data Pre-Processing
 
 ```{r}
-# Import data 
+# Cleaned 2015 BRFSS dataset - contains 253,680 observations
 diabetes_data = read.csv("diabetes_012_health_indicators_BRFSS2015.csv")
 ```
 
