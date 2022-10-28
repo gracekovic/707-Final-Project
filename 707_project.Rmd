@@ -27,6 +27,8 @@ str(raw_BRFSS2015)
 # Selected variables of interest: sex, age, mental health status, income level, physical health status, and health care coverage status
 BRFSS2015 =  BRFSS2015 %>% dplyr::select("SEX", "_AGEG5YR", "MENTHLTH", "INCOME2", "PHYSHLTH", "HLTHPLN1")
 
+BRFSS2015_2 = read.csv(here("2015.csv"))
+
 ```
 
 ```{r}
