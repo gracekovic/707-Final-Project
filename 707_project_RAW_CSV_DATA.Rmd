@@ -275,9 +275,5 @@ BRFSS2015_csv_no_77_99_income = BRFSS2015_csv[BRFSS2015_csv$INCOME2 != 77 & BRFS
 ```
 
 ```{r}
-
-```
-
-```{r}
 BRFSS2015_csv_NA_removed = BRFSS2015_csv %>% na.omit()
 ```
