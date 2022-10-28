@@ -21,8 +21,17 @@ library(haven)
 
 ```{r}
 # Raw data file from the 2015 BRFSS - contains 441,456 obs and 330 variables
-raw_BRFSS2015_data = read_xpt(here("LLCP2015.xpt"))
+BRFSS2015 = read_xpt(here("LLCP2015.xpt")) %>% as.data.frame()
+str(raw_BRFSS2015) 
 
+# Selected variables of interest: sex, age, mental health status, income level, physical health status, and health care coverage status
+BRFSS2015 =  BRFSS2015 %>% dplyr::select("SEX", "_AGEG5YR", "MENTHLTH", "INCOME2", "PHYSHLTH", "HLTHPLN1")
+
+```
+
+```{r}
+colSums(is.na(BRFSS2015)) 
+# 3301 missing values for income and 1 missing value for physical health status 
 ```
 
 #### Data Pre-Processing
