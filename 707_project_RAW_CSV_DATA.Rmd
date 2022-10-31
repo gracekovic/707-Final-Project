@@ -11,13 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Packages
-library(dplyr)
-library(tidyverse)
-library(ggplot2)
 library(RColorBrewer)
 library(here)
 library(haven)
 library(raster)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
 ```
 
 ```{r}
@@ -25,55 +25,56 @@ library(raster)
 BRFSS2015_csv = read.csv(here("2015.csv"))
 ```
 
-### Data Pre-processing 
+### Data Pre-processing
 
 ```{r}
 # Select variables of interest 
-BRFSS2015_csv = BRFSS2015_csv %>% dplyr::select(SEX, X_AGEG5YR, MENTHLTH, INCOME2, PHYSHLTH, HLTHPLN1)
+BRFSS2015_csv_2 = BRFSS2015_csv %>% dplyr::select(SEX, X_AGEG5YR, MENTHLTH, INCOME2, PHYSHLTH, HLTHPLN1)
 
 # Structure of dataset and summary statistics of all variables 
-str(BRFSS2015_csv)
-summary(BRFSS2015_csv)
+str(BRFSS2015_csv_2)
+summary(BRFSS2015_csv_2)
 
 # 3301 missing values for income, 1 missing value for physical health
-colSums(is.na(BRFSS2015_csv)) 
+colSums(is.na(BRFSS2015_csv_2)) 
 
 # Make incoome level a factor
-BRFSS2015_csv$INCOME2 = as.factor(BRFSS2015_csv$INCOME2) 
+# BRFSS2015_csv_2$INCOME2 = as.factor(BRFSS2015_csv_2$INCOME2) 
 
 # # Rename Age variable 
-# BRFSS2015_csv$AGEG5YR = BRFSS2015_csv$X_AGEG5YR
+# BRFSS2015_csv_2$AGEG5YR = BRFSS2015_csv_2$X_AGEG5YR
 ```
 
 ### EDA
 
-#### Sex 
+#### Sex
 
 ```{r}
-table(BRFSS2015_csv$SEX)
+table(BRFSS2015_csv_2$SEX)
 # 1 = Male 
 # 2 = Female 
 
-# BRFSS2015_csv[, "newSEX"] = BRFSS2015_csv[, "SEX"]-1
+# BRFSS2015_csv_2[, "newSEX"] = BRFSS2015_csv_2[, "SEX"]-1
 
 # Rename 1 and 2 as "Male" and "Female"
-BRFSS2015_csv$SEX_cat = factor(BRFSS2015_csv$SEX, 
+BRFSS2015_csv_2$SEX_cat = factor(BRFSS2015_csv_2$SEX, 
                                  levels = c(1, 2), 
                                  labels = c("Male", "Female"))
 ```
 
 ```{r}
 # Distribution of Sex
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   ggplot(aes(x = SEX_cat, fill = SEX_cat)) + 
   geom_bar() + 
   xlab("Sex") + 
   ylab("Count") + 
   ggtitle("Distribution of Sex")
+
 ```
 
 ```{r}
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & MENTHLTH != 77 & MENTHLTH != 99) %>% 
   ggplot(aes(x = SEX_cat, y = MENTHLTH, fill = SEX_cat)) + 
   geom_boxplot() + 
@@ -88,15 +89,28 @@ The number of days reported of mental health not well is approximately the same 
 
 ```{r}
 # Rename levels of Age using corresponding age ranges in codebook  
-BRFSS2015_csv$AGE_14cat = factor(BRFSS2015_csv$X_AGEG5YR, 
+BRFSS2015_csv_2$AGE_14cat = factor(BRFSS2015_csv_2$X_AGEG5YR, 
                                  levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"), 
-                                 labels = c("[18, 24]", "[25, 29]", "[30, 34]", "[35, 39]", "[40, 44]", "[45, 49]", "[50, 54]", "[55, 59]", "[60, 64]", "[65, 69]", "[70, 74]", "[75, 79]", "80 or older", "Don't know/Refused/Missing"))
+                                 labels = c("[18, 24]", 
+                                            "[25, 29]", 
+                                            "[30, 34]", 
+                                            "[35, 39]", 
+                                            "[40, 44]", 
+                                            "[45, 49]", 
+                                            "[50, 54]", 
+                                            "[55, 59]", 
+                                            "[60, 64]", 
+                                            "[65, 69]", 
+                                            "[70, 74]", 
+                                            "[75, 79]", 
+                                            "80 or older", 
+                                            "Don't know/Refused/Missing"))
 
 # 5,336 individuals were recorded as didn't know/refused/missing for age 
-sum(BRFSS2015_csv$AGE_14cat == "Don't know/Refused/Missing")
+sum(BRFSS2015_csv_2$AGE_14cat == "Don't know/Refused/Missing")
 
 # Barplot of Age INCLUDING level 14 (Don't know/Refused/Missing) category
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
 ggplot(aes(x = AGE_14cat)) + 
   geom_bar() + 
   xlab("Age") + 
@@ -106,22 +120,39 @@ ggplot(aes(x = AGE_14cat)) +
   
 ```
 
-#### Income Level 
+```{r}
+# Box plot of Mental Health Across Age group - "Refused" group for income INCLUDED 
+BRFSS2015_csv_2 %>% 
+  filter(MENTHLTH != 88 & 
+           MENTHLTH != 99 & 
+           MENTHLTH != 77 &
+           INCOME_10cat != "Don't_know/Not_sure") %>% 
+  ggplot(aes(x = INCOME_10cat, y = MENTHLTH, fill = INCOME_10cat)) +
+  geom_boxplot() + 
+  ggtitle("Mental Health Status Across Income Level") + 
+  xlab("") + 
+  ylab("Number of Days Mental Health Not Good") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) + 
+  labs(fill = "Income Level")
+```
+
+#### Income Level
 
 ```{r}
-summary(BRFSS2015_csv$INCOME2)
+summary(BRFSS2015_csv_2$INCOME2)
 
 # Rename each level of income using income ranges in codebook
-BRFSS2015_csv$INCOME_10cat = factor(BRFSS2015_csv$INCOME2, 
+BRFSS2015_csv_2$INCOME_10cat = factor(BRFSS2015_csv_2$INCOME2, 
                                  levels = c("1", "2", "3", "4", "5", "6", "7", "8", "77", "99"), 
                                  labels = c("<10000", "[10000, 15000)", "[15000, 20000)", "[20000, 25000)", "[25000, 35000)", "[35000, 50000)", "[50000, 75000)", ">75000", "Don't_know/Not_sure", "Refused"))
 
-table(BRFSS2015_csv$INCOME_10cat)
+table(BRFSS2015_csv_2$INCOME_10cat)
 ```
 
 ```{r}
 # Distribution of income level, EXCLUDING values of 77 ("Don't know/Not sure") and 99 ("Refused")
-BRFSS2015_csv %>% dplyr::filter(INCOME_10cat != "Don't_know/Not_sure" & INCOME_10cat != "Refused") %>% 
+BRFSS2015_csv_2 %>% 
+  filter(INCOME_10cat != "Don't_know/Not_sure" & INCOME_10cat != "Refused") %>% 
   ggplot(aes(INCOME_10cat)) + 
   geom_bar() + 
   xlab("Income Level") + 
@@ -134,17 +165,17 @@ BRFSS2015_csv %>% dplyr::filter(INCOME_10cat != "Don't_know/Not_sure" & INCOME_1
 #### Mental Health
 
 ```{r Summary of Mental Health}
-table(BRFSS2015_csv$MENTHLTH) # There are 301,076 individuals who reported "None" (zero days in the past month of feeling mentally not good)
+table(BRFSS2015_csv_2$MENTHLTH) # There are 301,076 individuals who reported "None" (zero days in the past month of feeling mentally not good)
 
 # Trying to count the number of days mental health not good for each income level 
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & MENTHLTH != 99 & MENTHLTH != 77) %>% 
   count(MENTHLTH, INCOME_10cat)
 ```
 
 ```{r}
 # Barplot of Mental Health Status, EXCLUDING individuals who reported "None" (zero days of feeling mentally unwell in past month)
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88) %>% # exclude individuals who reported "None" 
   ggplot(aes(x = MENTHLTH)) + 
   geom_bar() + 
@@ -156,7 +187,7 @@ BRFSS2015_csv %>%
 
 ```{r}
 # Histogram of Mental Health - EXCLUDE all non-numeric values
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & MENTHLTH != 99 & MENTHLTH != 77) %>% # exclude all non-numeric values
   ggplot(aes(x = MENTHLTH)) + 
   geom_histogram(aes(y = ..density..), color = "black", bins = 30) + 
@@ -165,8 +196,8 @@ BRFSS2015_csv %>%
 ```
 
 ```{r}
-# Box plot of Mental Health Across Income Level - "Refused" group for income EXCLUDED
-BRFSS2015_csv %>% 
+# Box plot of Mental Health Across Income Level - "Refused" group for income EXCLUDED all unknown values for mental health and income
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & 
            MENTHLTH != 99 & 
            MENTHLTH != 77 &
@@ -185,7 +216,7 @@ BRFSS2015_csv %>%
 
 ```{r}
 # Box plot of Mental Health Across Income Level - "Refused" group for income INCLUDED 
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & 
            MENTHLTH != 99 & 
            MENTHLTH != 77 &
@@ -200,38 +231,66 @@ BRFSS2015_csv %>%
   
 ```
 
-#### Physical Health 
+#### Physical Health
 
 ```{r}
 # Summary stats of physical health 
-summary(BRFSS2015_csv$PHYSHLTH)
+summary(BRFSS2015_csv_2$PHYSHLTH)
 
-table(BRFSS2015_csv$PHYSHLTH) # There are 274,143 ppl who reported  "None" (zero days of feeling mentally unwell)
+table(BRFSS2015_csv_2$PHYSHLTH) # There are 274,143 ppl who reported  "None" (zero days of feeling mentally unwell)
 
 # There is one individual who is missing a physical health status value 
 # This same individual is also missing a value for income level 
-BRFSS2015_csv %>% filter(is.na(PHYSHLTH))
+BRFSS2015_csv_2 %>% filter(is.na(PHYSHLTH))
   
 ```
 
 ```{r}
-# Distribution of Physical Health Status
-BRFSS2015_csv %>% 
+# Distribution of Physical Health Status - Only EXCLUDE missing values for physical health (1 total)
+BRFSS2015_csv_2 %>% 
   filter(!is.na(PHYSHLTH)) %>% # Excluded the 1 missing value for physical health
-  #filter(PHYSHLTH != "88") %>% # Excluded individuals with "None"
   ggplot(aes(x = PHYSHLTH)) + 
-  geom_bar() + 
+  geom_histogram() + 
   xlab("Number of Days Physical Health Not Good") + 
   ylab("Count") + 
   ggtitle("Distribution of Physical Health Status") + 
   labs(subtitle = "Now thinking about your physical health, including physical illness and injury, \n for how many days during the past 30 days was your physical health not good?")
 ```
 
-#### Health Care Coverage 
+```{r}
+
+# Distribution of Physical Health Status - Only exclude individuals who refused to answer or didn't know/not sure
+BRFSS2015_csv_2 %>% 
+  filter(!is.na(PHYSHLTH)) %>% # Excluded the 1 missing value for physical health
+  filter(PHYSHLTH != 77 & PHYSHLTH != 99) %>% # Excluded all unknown values  
+  ggplot(aes(x = PHYSHLTH)) + 
+  geom_histogram() + 
+  xlab("Number of Days Physical Health Not Good") + 
+  ylab("Count") + 
+  ggtitle("Distribution of Physical Health Status") + 
+  labs(subtitle = "Now thinking about your physical health, including physical illness and injury, \n for how many days during the past 30 days was your physical health not good?")
+```
 
 ```{r}
-summary(BRFSS2015_csv$HLTHPLN1)
-table(BRFSS2015_csv$HLTHPLN1)
+# Scatterplot of number of mental health days vs. number of physical health days 
+BRFSS2015_csv_2 %>% 
+  filter(!is.na(PHYSHLTH)) %>% # Excluded the 1 missing value for physical health
+  filter(PHYSHLTH != 88 & PHYSHLTH != 77 & PHYSHLTH != 99 & MENTHLTH != 88 & 
+           MENTHLTH != 99 & MENTHLTH != 77) %>% # Excluded individuals with non-numeric values for physical health and mental health 
+  ggplot(aes(x = PHYSHLTH, y = MENTHLTH)) + 
+  geom_point() + 
+  xlab("Number of Days Physical Health Not Good") + 
+  ylab("Number of Days Mental Health Not Good") + 
+  ggtitle("Physical Health Status vs. Mental Health Status")
+```
+
+There doesn't appear to be an association between the number of days physical health not good and number of days mental health not good.
+
+#### Health Care Coverage
+
+```{r}
+summary(BRFSS2015_csv_2$HLTHPLN1)
+table(BRFSS2015_csv_2$HLTHPLN1)
 # 407,556 individuals have health care coverage 
 # 32,060 don't have health care coverage 
 # 1,052 don't know/not sure 
@@ -240,40 +299,50 @@ table(BRFSS2015_csv$HLTHPLN1)
 ```
 
 ```{r}
-# Rename 0 and 1 as "Male" and "Female"
-BRFSS2015_csv$HLTHPLN1_cat = factor(BRFSS2015_csv$HLTHPLN1, 
+# Rename 1 and 2 as "Yes" and "No", respectively
+BRFSS2015_csv_2$HLTHPLN1_cat = factor(BRFSS2015_csv_2$HLTHPLN1, 
                                  levels = c(1, 2), 
                                  labels = c("Yes", "No"))
 
+#table(BRFSS2015_csv_2$HLTHPLN1_cat, BRFSS2015_csv_2$INCOME_10cat, exclude = NULL)
+
+BRFSS2015_csv_2 %>% 
+  count(HLTHPLN1_cat, INCOME_10cat)
+
 # Distribution of Health Care Coverage Status
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(HLTHPLN1 != 7 & HLTHPLN1 != 9) %>% 
   ggplot(aes(HLTHPLN1_cat)) + 
   geom_bar() + 
   xlab("Health care coverage status") + 
   ylab("Count") + 
   ggtitle("Distribution of Health Care Coverage") +
-  labs(subtitle = "Do you have any kind of health care coverage, including health insurance, prepaid plans such as HMOs, or government plans such as Medicare, or Indian Health Services")
+  labs(subtitle = "Do you have any kind of health care coverage, including health insurance, prepaid plans \n such as HMOs, or government plans such as Medicare, or Indian Health Services?")
 ```
+
+The majority of individuals surveyed in the 2015 BRFSS reported having any kind of health care coverage including the types mentioned in the survey question.
 
 ```{r}
 # Number of days of mental health not good across heathcare coverage status
-BRFSS2015_csv %>% 
+BRFSS2015_csv_2 %>% 
   filter(MENTHLTH != 88 & MENTHLTH != 77 & MENTHLTH != 99 & HLTHPLN1 != 7 & HLTHPLN1 != 9) %>% # Excluding "none", "don't know/not sure", "refused" for mental health and health care 
   ggplot(aes(x = as.factor(HLTHPLN1_cat), y = MENTHLTH, fill = as.factor(HLTHPLN1_cat))) + 
   geom_boxplot() + 
   xlab("Health Care Coverage Status") + 
   ylab("Number of Days Mental Health Not Good") + 
-  ggtitle("Mental Health Status Across Health Care Coverage Status") 
+  ggtitle("Mental Health Status Across Health Care Coverage Status")
+  
 ```
+
+Based on the plot above, it appears that the number of days reported of mental health not good were significantly higher among individuals without any kind of health care coverage than those with any kind of health care coverage.
 
 #### Handling missing values for Income Level
 
 ```{r}
-# Removes values of 77 ("Don't know/Not sure"), 99 ("Refused") in Income variable AND all NA values (3300)
-BRFSS2015_csv_no_77_99_income = BRFSS2015_csv[BRFSS2015_csv$INCOME2 != 77 & BRFSS2015_csv$INCOME2 != 99, ]
+# Removes values of 77 ("Don't know/Not sure"), 99 ("Refused") in Income variable AND all NA values (3301)
+BRFSS2015_csv_2_no_77_99_income = BRFSS2015_csv_2[BRFSS2015_csv_2$INCOME2 != 77 & BRFSS2015_csv_2$INCOME2 != 99, ]
 ```
 
 ```{r}
-BRFSS2015_csv_NA_removed = BRFSS2015_csv %>% na.omit()
+BRFSS2015_csv_2_NA_removed = BRFSS2015_csv_2 %>% na.omit()
 ```
