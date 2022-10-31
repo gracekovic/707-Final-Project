@@ -330,7 +330,8 @@ BRFSS2015_csv_2 %>%
   geom_boxplot() + 
   xlab("Health Care Coverage Status") + 
   ylab("Number of Days Mental Health Not Good") + 
-  ggtitle("Mental Health Status Across Health Care Coverage Status")
+  ggtitle("Mental Health Status Across Health Care Coverage Status") + 
+  theme(legend.position = "none")
   
 ```
 
